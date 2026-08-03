@@ -1011,7 +1011,19 @@ for start, si, shot, trim, d in SHOT_STARTS:
     c0 = shot["balls"]["cue"]["r"][0]
     bx, by, bz = bl(c0[0], c0[1], c0[2])
     ang = atan2(d[1], d[0]) + math.pi   # butt behind the ball, tip toward it
-    cue.rotation_euler = (0, radians(-4), 0)
+    # elevate over a near cushion like a real player (pocket mouths are open)
+    pitch = 4.0
+    for s_back in [x * 0.02 for x in range(1, 74)]:
+        px = c0[0] - d[0] * s_back
+        py = c0[1] - d[1] * s_back
+        if not (0 <= px <= W and 0 <= py <= L):
+            dp = min(math.hypot(px - q[0], py - q[1]) for q in POCKETS.values())
+            if dp >= 0.10:
+                need = math.degrees(math.atan(
+                    (0.045 + 0.015 + 0.004 - (BALL_R + 0.01)) / s_back))
+                pitch = max(pitch, min(need, 16.0))
+            break
+    cue.rotation_euler = (0, radians(-pitch), 0)
     tip_off = BALL_R + 0.006            # tip rests at the ball's surface
 
     def cue_pos(back, lift=0.0):
@@ -1020,7 +1032,7 @@ for start, si, shot, trim, d in SHOT_STARTS:
 
     ready_f = start - GAP_F + 10
     key_loc(cue, ready_f - 6, cue_pos(0.34, 0.28))
-    cue.rotation_euler = (0, radians(-4), ang)
+    cue.rotation_euler = (0, radians(-pitch), ang)
     cue.keyframe_insert("rotation_euler", frame=ready_f - 6)
     cue.keyframe_insert("rotation_euler", frame=start + 20)
     key_loc(cue, ready_f, cue_pos(0.05))
@@ -1033,7 +1045,7 @@ for start, si, shot, trim, d in SHOT_STARTS:
     key_loc(cue, start + 22 + hold, cue_pos(0.30, 0.18))
     rack_x = -2.72 if cue is cue_a else -3.08
     key_loc(cue, start + 50 + hold, (rack_x, 5.32, 1.32))
-    cue.rotation_euler = (0, radians(-4), ang)
+    cue.rotation_euler = (0, radians(-pitch), ang)
     cue.keyframe_insert("rotation_euler", frame=start + 24 + hold)
     cue.rotation_euler = (0, radians(-90), 0)
     cue.keyframe_insert("rotation_euler", frame=start + 50 + hold)

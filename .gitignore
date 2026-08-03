@@ -10,3 +10,4 @@ render.log
 out/pool-game.*
 site/pool-game.mp4
 render_full.log
+*.blend1

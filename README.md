@@ -25,17 +25,27 @@ simulate_game.py ──► game.json ──► render_game.py ──► frames/ 
    exported at 60 Hz with roll orientations integrated from angular velocity.
 2. **The frozen take** — pooltool's internal RNG isn't fully seedable from
    outside, so reproducibility lives at the artifact level: `game.json` is
-   the canonical take (35 shots, ~178 s of ball action, 4 scratches, Sam
-   wins on stripes). The film always renders from this file.
+   the canonical take (34 shots, ~151 s of ball action, 3 scratches). Sam
+   wins on stripes with a real heartbreak ending: Ray pots the 8 — and
+   scratches the cue ball into the same pocket. The film always renders
+   from this file.
 3. **The film** — [`render_game.py`](render_game.py) rebuilds the table in
    Blender to pooltool's *exact* playfield geometry (cushion noses on the
    physics lines, pocket mouths at the physics pockets, 0.9906 × 1.9812 m
    seven-foot bar box), then: textured worsted felt (procedural cloth bump +
-   sheen), walnut wood grain (CC0 PBR), chrome pocket irons, leather drops,
-   phenolic balls with rolled stripe bands, two cues that stroke each shot,
-   a three-shade billiard lamp, and a wood-floored room with walls and
-   ceiling melting into depth of field. Cameras cut per shot (low rail /
-   side / three-quarter / overhead), AgX grade.
+   sheen + wear), walnut wood grain (CC0 PBR), chrome pocket irons, a full
+   regulation ball set (1–15, painted numbers and stripe bands that roll
+   with the ball), two cues that stroke each shot and park on a wall rack,
+   and a seedy dive-bar room: brick walls, tin ceiling, neon POOL and EXIT
+   signs, back-bar bottle shelf, stools, drink rail with beers, dartboard,
+   string bulbs, haze and dust motes — all melting into depth of field.
+   The camera program: a chalk scoreboard intro, the break from directly
+   overhead, a **bullet-time orbit** of the exploding rack (the break
+   re-simulated at 1 kHz and retimed to 2 % speed), pocket-cam cuts as
+   balls drop (a chalkboard tally X-es off each one), per-shot coverage on
+   handheld-noise cameras, and a hold on the final heartbreak — Ray's 8
+   drops and the pocket cam stays for the cue ball following it in. AgX
+   "Punchy" grade, motion blur, silent by design.
 
 ## Run it
 
@@ -50,12 +60,15 @@ ffmpeg -framerate 30 -i frames/f_%04d.png -c:v libx264 -pix_fmt yuv420p \
 
 ## Honest limitations
 
-- Ball **numbers** aren't rendered (solids/stripes read by color+band).
 - Players are present as agents and their cues, not human figures.
 - Rules are bar-league flavored: no call-shot, simplified fouls (scratch →
   ball-in-hand anywhere).
-- Cushion/pocket visual geometry matches the physics lines but is stylized
-  (no boolean pocket cuts through the rails).
+- Cushion/pocket visual geometry matches the physics lines but is stylized:
+  chrome irons + drop cups rather than sewn leather pouches, and no boolean
+  pocket cuts through the rails.
+- The room haze is faked with gradient-emission cones — EEVEE's real
+  volumetrics render blocky froxel artifacts on dark walls at this scale.
+- No sound, by design — this is a visual test.
 
 ## Credits & licenses
 

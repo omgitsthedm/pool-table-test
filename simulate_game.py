@@ -243,17 +243,23 @@ def main():
         pname = PLAYERS[idx]["name"]
 
         targets = legal_targets(system, groups, pname)
-        if ball_in_hand or is_break:
-            place_ball_in_hand(system, targets, kitchen_only=is_break)
+        if is_break:
+            # proper power break: cue ball on the head spot, dead center
+            cb = system.balls["cue"]
+            cb.state.rvw[0][0] = table.w / 2
+            cb.state.rvw[0][1] = table.l * 0.25
+            cb.state.s = 0
+        elif ball_in_hand:
+            place_ball_in_hand(system, targets, kitchen_only=False)
             targets = legal_targets(system, groups, pname)
         if is_break:
             plan = {
                 "ball": "1",
                 "pocket": None,
-                "phi": pt.aim.at_ball(system, "1") + rng.gauss(0, 0.35),
-                "V0": 7.6 + rng.gauss(0, 0.4),
+                "phi": pt.aim.at_ball(system, "1") + rng.gauss(0, 0.25),
+                "V0": 8.2 + rng.gauss(0, 0.3),
                 "a": 0.0,
-                "b": -0.12,
+                "b": -0.06,
                 "kind": "break",
             }
         else:

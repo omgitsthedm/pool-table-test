@@ -1,0 +1,98 @@
+[
+ {
+  "shot": 0,
+  "ball": "13",
+  "pocket": "rb",
+  "i": 305
+ },
+ {
+  "shot": 0,
+  "ball": "2",
+  "pocket": "rt",
+  "i": 227
+ },
+ {
+  "shot": 3,
+  "ball": "12",
+  "pocket": "rb",
+  "i": 52
+ },
+ {
+  "shot": 3,
+  "ball": "cue",
+  "pocket": "lc",
+  "i": 30
+ },
+ {
+  "shot": 15,
+  "ball": "10",
+  "pocket": "rt",
+  "i": 35
+ },
+ {
+  "shot": 19,
+  "ball": "1",
+  "pocket": "lc",
+  "i": 140
+ },
+ {
+  "shot": 20,
+  "ball": "14",
+  "pocket": "lc",
+  "i": 9
+ },
+ {
+  "shot": 20,
+  "ball": "cue",
+  "pocket": "lt",
+  "i": 93
+ },
+ {
+  "shot": 21,
+  "ball": "11",
+  "pocket": "rb",
+  "i": 27
+ },
+ {
+  "shot": 22,
+  "ball": "4",
+  "pocket": "rc",
+  "i": 16
+ },
+ {
+  "shot": 23,
+  "ball": "15",
+  "pocket": "lb",
+  "i": 45
+ },
+ {
+  "shot": 27,
+  "ball": "9",
+  "pocket": "lt",
+  "i": 3
+ },
+ {
+  "shot": 30,
+  "ball": "5",
+  "pocket": "lb",
+  "i": 30
+ },
+ {
+  "shot": 32,
+  "ball": "3",
+  "pocket": "rt",
+  "i": 42
+ },
+ {
+  "shot": 33,
+  "ball": "8",
+  "pocket": "lb",
+  "i": 2
+ },
+ {
+  "shot": 33,
+  "ball": "cue",
+  "pocket": "lb",
+  "i": 45
+ }
+]

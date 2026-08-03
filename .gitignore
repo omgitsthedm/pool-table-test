@@ -3,3 +3,4 @@ frames/
 *.blend
 out/test_*.png
 __pycache__/
+render.log

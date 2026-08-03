@@ -4,7 +4,7 @@ A standalone demo: two moderate-skill AI players play a **complete game of
 8-ball** under real billiards physics, and the whole game is rendered as a
 cinematic film on a photoreal 7-foot bar table in an out-of-focus room.
 
-**Demo:** the rendered film lives in `out/` and on the Netlify site.
+**Demo:** [pool-table-test.netlify.app](https://pool-table-test.netlify.app) · film in `out/` once rendered.
 
 ## How it works
 

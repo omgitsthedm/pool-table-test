@@ -28,13 +28,14 @@
     (<a href="https://github.com/ekiefl/pooltool">pooltool</a>), then rendered
     as a film in Blender.</p>
   <div class="frame">
-    <video src="pool-game.mp4" controls playsinline poster="poster.jpg"></video>
+    <video src="pool-game.mp4" controls playsinline poster="poster.jpg"
+           onerror="this.outerHTML='<video src=break-preview.mp4 autoplay muted loop playsinline poster=poster.jpg></video>'"></video>
   </div>
   <p class="meta"><span><b>35</b> SHOTS</span><span><b>178s</b> BALL ACTION</span>
     <span><b>4</b> SCRATCHES</span><span>WINNER · <b>SAM</b> (STRIPES)</span>
     <span><b>60Hz</b> PHYSICS · <b>30</b>FPS FILM</span></p>
   <p class="foot">7-ft bar table built to the simulator's exact playfield geometry —
     the film's cushions sit on the physics lines. Full pipeline + docs on
-    <a id="gh" href="#">GitHub</a>.</p>
+    <a href="https://github.com/omgitsthedm/pool-table-test">GitHub</a>.</p>
 </body>
 </html>

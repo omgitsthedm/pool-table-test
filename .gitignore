@@ -4,3 +4,6 @@ frames/
 out/test_*.png
 __pycache__/
 render.log
+
+# Local Netlify folder
+.netlify

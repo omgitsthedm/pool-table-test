@@ -19,16 +19,16 @@ simulate_game.py ──► game.json ──► render_game.py ──► frames/ 
    sliding→rolling friction, spin. On top of it: two AI players with a
    moderate-skill model (aim wander that grows with shot distance, speed
    misjudgement, unintentional english), 8-ball flow (open table → groups on
-   first legal pot → run your group → the 8), scratches with ball-in-hand,
+   the first pot → run your group → the 8), scratches with ball-in-hand,
    and a house rule: an 8 potted on the break is re-spotted (APA scores that
    a win; it would make a one-shot film). Every shot's trajectories are
    exported at 60 Hz with roll orientations integrated from angular velocity.
 2. **The frozen take** — pooltool's internal RNG isn't fully seedable from
    outside, so reproducibility lives at the artifact level: `game.json` is
-   the canonical take (34 shots, ~151 s of ball action, 3 scratches). Sam
-   wins on stripes with a real heartbreak ending: Ray pots the 8 — and
-   scratches the cue ball into the same pocket. The film always renders
-   from this file.
+   the canonical take (34 shots, ~151 s of ball action, 3 scratches). Ray
+   draws stripes, Sam solids — and Sam wins with a real heartbreak ending:
+   Ray finally pots the 8, and the cue ball follows it into the same
+   pocket. The film always renders from this file.
 3. **The film** — [`render_game.py`](render_game.py) rebuilds the table in
    Blender to pooltool's *exact* playfield geometry (cushion noses on the
    physics lines, pocket mouths at the physics pockets, 0.9906 × 1.9812 m

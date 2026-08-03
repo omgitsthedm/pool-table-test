@@ -568,7 +568,7 @@ dr.data.materials.append(M_CHROME)
 # crooked frames + license plates on the walls
 _rnd.seed(11)
 for i, (fx, fy, fz, w, h, tilt) in enumerate((
-        (1.9, 5.40, 1.75, 0.42, 0.55, 2.5), (2.9, 5.40, 1.9, 0.34, 0.26, -3.5),
+        (0.95, 5.40, 1.75, 0.42, 0.55, 2.5), (4.15, 5.40, 1.9, 0.34, 0.26, -3.5),
         (-2.4, 5.40, 1.85, 0.5, 0.38, 1.8), (4.46, -1.8, 1.9, 0.4, 0.3, -2.0))):
     rot = (radians(90), radians(tilt), radians(180)) if fy > 5 else (radians(90), radians(tilt), radians(90))
     box("frame_%d" % i, (w, h, 0.03), (fx, fy, fz), M_WOOD, rot=rot, bevel=0.003)
@@ -1085,16 +1085,16 @@ cam_three, t_three = make_cam("cam_three", 3.2, 40)
 cam_top, t_top = make_cam("cam_top", 5.0, 30)
 cam_pkt, t_pkt = make_cam("cam_pkt", 2.2, 58)
 cam_orbit, t_orbit = make_cam("cam_orbit", 2.8, 55)
-cam_board, t_board = make_cam("cam_board", 3.5, 55)
+cam_board, t_board = make_cam("cam_board", 4.0, 35)
 scene.camera = cam_board
 
 CYCLE = [cam_three, cam_low, cam_side, cam_low, cam_top]
 T_OF = {cam_low: t_low, cam_side: t_side, cam_three: t_three, cam_top: t_top}
 
 # board intro: names on the chalkboard, slow push
-key_loc(cam_board, 1, (2.65, 4.05, 1.55))
-key_loc(cam_board, INTRO_F, (2.65, 4.42, 1.55))
-key_loc(t_board, 1, (2.65, 5.4, 1.55))
+key_loc(cam_board, 1, (2.65, 3.28, 1.55))
+key_loc(cam_board, INTRO_F, (2.65, 3.72, 1.55))
+key_loc(t_board, 1, (2.65, 5.4, 1.45))
 mk = scene.timeline_markers.new("intro", frame=1)
 mk.camera = cam_board
 
@@ -1228,8 +1228,8 @@ key_hide(bpy.data.objects["board_wins"], F_END - OUTRO_F + 30, False)
 # closing: pocket-cam heartbreak already held; then the board tells it
 mk = scene.timeline_markers.new("outro", frame=F_END - OUTRO_F + 12)
 mk.camera = cam_board
-key_loc(cam_board, F_END - OUTRO_F + 12, (2.65, 4.5, 1.55))
-key_loc(cam_board, F_END, (2.65, 4.15, 1.55))
+key_loc(cam_board, F_END - OUTRO_F + 12, (2.65, 3.32, 1.45))
+key_loc(cam_board, F_END, (2.65, 3.56, 1.42))
 
 # handheld: subtle noise on every camera
 for c in (cam_low, cam_side, cam_three, cam_top, cam_pkt, cam_orbit, cam_board):

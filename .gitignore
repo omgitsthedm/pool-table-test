@@ -7,3 +7,6 @@ render.log
 
 # Local Netlify folder
 .netlify
+out/pool-game.*
+site/pool-game.mp4
+render_full.log

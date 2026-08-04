@@ -5,7 +5,7 @@ render_break.py — thirty seconds of one break, at 24 fps.
   blender -b -P render_break.py -- --render [start end]
 
 The table comes from build_table (real pockets cut through the slate, flat
-cabinet, K-66 cushions), the player from build_human (MakeHuman CC0 base mesh
+cabinet, K-66 cushions). No figure: the cue is the only actor, and it
 on a joint-accurate rig, posed by IK), and the ball motion from break.json,
 which pooltool simulated at 120 Hz. Balls that reach a pocket fall through the
 hole and settle in the pouch underneath — no ring, no vanishing.
@@ -24,7 +24,6 @@ from mathutils import Vector, Quaternion
 HERE = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, HERE)
 import build_table as BT           # noqa: E402
-import build_human as BH           # noqa: E402
 
 argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 
@@ -379,19 +378,12 @@ def ball_quat(bid, f):
 
 
 # ------------------------------------------------------------- the player ---
-SKIN = principled("skin", (0.40, 0.26, 0.19), 0.58)
-SHIRT = principled("shirt", (0.085, 0.095, 0.115), 0.88)
-JEANS = principled("jeans", (0.055, 0.070, 0.105), 0.90)
-HAIR = principled("hair", (0.022, 0.018, 0.016), 0.72)
+
 
 CB0 = DATA["balls"]["cue"]["r"][0]
 BALL_Y = CB0[1] - L / 2
 CUE_X = CB0[0] - W / 2
 
-RIG, PARTS, JOINTS = BH.build_player(skin=SKIN, shirt=SHIRT, jeans=JEANS,
-                                     hair=HAIR)
-CTRL = BH.add_ik(RIG)
-BH.break_stance(RIG, CTRL, cue_line_x=CUE_X, bed_z=BED, ball_y=BALL_Y)
 bpy.context.view_layer.update()
 
 # ------------------------------------------------------------------- cue ----
@@ -449,11 +441,8 @@ for f in range(1, F_END + 1):
         ob.rotation_quaternion = ball_quat(bid, f)
         ob.keyframe_insert("rotation_quaternion", frame=f)
     key_loc(CUE, f, cue_place(f))
-    BH.stroke(CTRL, max(0.0, stroke_back(f)), cue_line_x=CUE_X, bed_z=BED,
-              ball_y=BALL_Y)
-    CTRL["hand_r"].keyframe_insert("location", frame=f)
 
-for ob in list(BALLS.values()) + [CUE, CTRL["hand_r"]]:
+for ob in list(BALLS.values()) + [CUE]:
     linearize(ob)
 
 # ---------------------------------------------------------------- cameras ---

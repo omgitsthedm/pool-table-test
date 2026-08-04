@@ -66,7 +66,17 @@ def sim_time(f):
 
 
 def sample_at(f):
-    return min(N_SAMP - 1, max(0, int(round(sim_time(f) * RATE))))
+    """film frame -> fractional physics sample (never rounded: rounding is
+    what made the balls stutter through the slow-motion beats)"""
+    return min(N_SAMP - 1.0, max(0.0, sim_time(f) * RATE))
+
+
+def _lerp_sample(seq, t):
+    i = int(math.floor(t))
+    j = min(len(seq) - 1, i + 1)
+    u = t - i
+    a, b = seq[i], seq[j]
+    return [a[k] + (b[k] - a[k]) * u for k in range(len(a))]
 
 
 def stroke_back(f):
@@ -345,34 +355,43 @@ FALL_S = 0.42                       # seconds of sim time the drop occupies
 
 def ball_pos(bid, f):
     """world position for `bid` at film frame f, including the pocket drop"""
-    i = sample_at(f)
+    t = sample_at(f)
     r = DATA["balls"][bid]["r"]
-    i = min(i, len(r) - 1)
-    x, y, z = r[i]
+    t = min(t, len(r) - 1.0)
+    i = int(math.floor(t))
+    x, y, z = _lerp_sample(r, t)
     p = Vector((x - W / 2, y - L / 2, BED + z))
     if bid in POTTED:
         ps = POT_SAMPLE.get(bid)
-        if ps is not None and i >= ps:
+        if ps is not None and t >= ps:
             c, rad = HOLES[POTTED[bid]]
             rest = BT.drop_target(POTTED[bid], HOLES)
-            u = min(1.0, (i - ps) / max(1.0, FALL_S * RATE))
+            u = min(1.0, (t - ps) / max(1.0, FALL_S * RATE))
             mouth = Vector((p.x, p.y, BED + BALL_R))
             lip = Vector((c.x, c.y, BED + BALL_R))
             if u < 0.18:                       # slides over the lip
                 k = u / 0.18
                 return mouth.lerp(lip, k)
+            # free fall under gravity, then one damped bounce in the pouch
             k = (u - 0.18) / 0.82
-            drop = lip.lerp(rest, min(1.0, k * 1.35))
-            if k > 0.74:                       # a small settle bounce
-                b = math.sin((k - 0.74) / 0.26 * math.pi) * 0.012
-                drop.z += b
+            fall = lip.z - rest.z
+            tf = math.sqrt(max(1e-6, 2.0 * fall / 9.81))
+            tt = k * tf * 1.55
+            z = lip.z - 0.5 * 9.81 * tt * tt
+            drop = lip.lerp(rest, min(1.0, k * 1.1))
+            if z > rest.z:
+                drop.z = z
+            else:                              # settle: one small damped hop
+                over = (tt - tf) / max(1e-6, tf)
+                drop.z = rest.z + abs(math.sin(over * 3.0)) * 0.016 * \
+                    math.exp(-over * 4.0)
             return drop
     return p
 
 
 def ball_quat(bid, f):
     q = DATA["balls"][bid]["q"]
-    i = min(sample_at(f), len(q) - 1)
+    i = int(math.floor(min(sample_at(f), len(q) - 1.0)))
     w, x, y, z = q[i]
     return Quaternion((w, x, y, z))
 
@@ -402,14 +421,14 @@ for part, off in ((shaft, CUE_LEN * 0.28), (butt, CUE_LEN * 0.78),
     part.parent = CUE
     part.location = (0, 0, -off)
     part.rotation_euler = (0, 0, 0)
-CUE.rotation_euler = (radians(-90) - radians(4.5), 0, 0)
+CUE.rotation_euler = (radians(-90) - radians(7.5), 0, 0)
 
 
 def cue_place(f):
     """tip rides the aim line; back-off comes from the stroke curve"""
     back = stroke_back(f)
     tipz = BED + BALL_R + 0.004
-    return (CUE_X, BALL_Y - BALL_R - 0.004 - back, tipz + back * 0.075)
+    return (CUE_X, BALL_Y - BALL_R - 0.004 - back, tipz + back * 0.1317)
 
 
 # ------------------------------------------------------------------ keys ----

@@ -353,10 +353,14 @@ def build(mats, table):
     # ------------------------------------------------------------ the bed ---
     outer_w = W + 2 * S.RAIL_W
     outer_l = L + 2 * S.RAIL_W
+    # The cloth lies ON the slate: the slate's top face must sit below the
+    # cloth's underside, or the two coplanar faces z-fight and the bed
+    # flickers from frame to frame.
+    CLOTH_T = 0.0035
     slate = _box("slate", (outer_w, outer_l, S.SLATE_T),
-                 bl(W / 2, L / 2, -S.SLATE_T / 2), mats["slate"])
-    cloth = _box("cloth", (outer_w, outer_l, 0.0035),
-                 bl(W / 2, L / 2, -0.00175), mats["cloth"])
+                 bl(W / 2, L / 2, -CLOTH_T - S.SLATE_T / 2), mats["slate"])
+    cloth = _box("cloth", (outer_w, outer_l, CLOTH_T),
+                 bl(W / 2, L / 2, -CLOTH_T / 2), mats["cloth"])
     frame = _box("slate_frame", (outer_w + 0.02, outer_l + 0.02,
                                  S.SLATE_FRAME_T),
                  bl(W / 2, L / 2, -S.SLATE_T - S.SLATE_FRAME_T / 2),
@@ -500,27 +504,43 @@ def build(mats, table):
     parts["pouches"] = pouches
 
     # ---------------------------------------------------------- cabinet -----
+    # Cabinet: the sides rake inward at 15 degrees from the underside of the
+    # rail cap, so the cap's outer edge and the top of the side are flush and
+    # the table has no shelf or lip running round it.
+    RAKE = radians(15.0)
     apron_h = 0.20
-    ax = outer_w / 2 + 0.010
-    ay = outer_l / 2 + 0.010
+    apron_t = 0.032
+    # flush with the cap edge, then tilted about its own top edge
+    cap_x = W / 2 + S.RAIL_W + 0.007
+    cap_y = L / 2 + S.RAIL_W + 0.007
+    top_z = BED - CLOTH_T - S.SLATE_T
+    # tilting about the top edge drops the centre and pulls it inward
+    dz = (apron_h / 2) * cos(RAKE)
+    din = (apron_h / 2) * sin(RAKE)
+    ax = cap_x - apron_t / 2 * cos(RAKE)
+    ay = cap_y - apron_t / 2 * cos(RAKE)
     aprons = [
-        _box("apron_l", (0.032, outer_l + 0.02, apron_h),
-             (-ax, 0, BED - S.SLATE_T - apron_h / 2), mats["wood"], bevel=0.002),
-        _box("apron_r", (0.032, outer_l + 0.02, apron_h),
-             (ax, 0, BED - S.SLATE_T - apron_h / 2), mats["wood"], bevel=0.002),
-        _box("apron_b", (outer_w + 0.02, 0.032, apron_h),
-             (0, -ay, BED - S.SLATE_T - apron_h / 2), mats["wood"], bevel=0.002),
-        _box("apron_t", (outer_w + 0.02, 0.032, apron_h),
-             (0, ay, BED - S.SLATE_T - apron_h / 2), mats["wood"], bevel=0.002),
+        _box("apron_l", (apron_t, outer_l + 0.02, apron_h),
+             (-(ax - din), 0, top_z - dz), mats["wood"],
+             rot=(0, -RAKE, 0), bevel=0.002),
+        _box("apron_r", (apron_t, outer_l + 0.02, apron_h),
+             (ax - din, 0, top_z - dz), mats["wood"],
+             rot=(0, RAKE, 0), bevel=0.002),
+        _box("apron_b", (outer_w + 0.02, apron_t, apron_h),
+             (0, -(ay - din), top_z - dz), mats["wood"],
+             rot=(RAKE, 0, 0), bevel=0.002),
+        _box("apron_t", (outer_w + 0.02, apron_t, apron_h),
+             (0, ay - din, top_z - dz), mats["wood"],
+             rot=(-RAKE, 0, 0), bevel=0.002),
     ]
     leg = 0.115
-    leg_h = BED - S.SLATE_T - apron_h
+    leg_h = top_z - apron_h * cos(RAKE)
     legs = []
     for sx in (-1, 1):
         for sy in (-1, 1):
             legs.append(_box(
                 "leg", (leg, leg, leg_h),
-                (sx * (ax - leg / 2 + 0.004), sy * (ay - leg / 2 + 0.004),
+                (sx * (ax - 2 * din - leg / 2), sy * (ay - 2 * din - leg / 2),
                  leg_h / 2), mats["wood"], bevel=0.003))
     parts["aprons"], parts["legs"] = aprons, legs
     parts["bl"] = bl

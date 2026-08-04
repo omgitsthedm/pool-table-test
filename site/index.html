@@ -3,163 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pool Table Test — a physics-true 8-ball game</title>
-<meta name="description" content="Two AI players, one complete game of 8-ball under real billiards physics, rendered as a cinematic dive-bar film in Blender.">
-<meta property="og:title" content="Pool Table Test — a physics-true 8-ball game">
-<meta property="og:description" content="Two AI players, one complete game of 8-ball under real billiards physics — with a 1kHz bullet-time break.">
-<meta property="og:image" content="https://pool-table-test.netlify.app/stills/bullet-time.jpg">
-<meta property="og:type" content="website">
+<title>Pool Table Test</title>
+<meta property="og:title" content="Pool Table Test">
+<meta property="og:image" content="https://pool-table-test.netlify.app/poster.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <style>
-  :root{--bg:#0d0b08;--ink:#e8e2d4;--dim:#9a8f7a;--green:#4fc98a;--line:#2a2620;--card:#14110c}
-  *{box-sizing:border-box;margin:0}
-  body{background:var(--bg);color:var(--ink);font:16px/1.6 -apple-system,'Segoe UI',sans-serif;
-    display:flex;flex-direction:column;align-items:center;padding:40px 20px 80px}
-  h1{font-size:28px;letter-spacing:-.01em;margin:18px 0 6px}
-  h2{font-size:15px;letter-spacing:.14em;color:var(--dim);margin:54px 0 16px;text-transform:uppercase}
-  .sub{color:var(--dim);max-width:640px;text-align:center;margin-bottom:28px}
-  .frame{width:min(1080px,96vw);border:1px solid var(--line);border-radius:14px;
-    overflow:hidden;background:#000;box-shadow:0 30px 80px rgba(0,0,0,.5)}
-  video{display:block;width:100%}
-  .meta{display:flex;gap:22px;margin-top:18px;font-family:ui-monospace,Menlo,monospace;
-    font-size:12px;color:var(--dim);flex-wrap:wrap;justify-content:center}
-  .meta b{color:var(--green)}
-  .wrap{width:min(1080px,96vw)}
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
-  .grid figure{margin:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
-  .grid img{display:block;width:100%}
-  .grid figcaption{padding:10px 14px;font-size:12.5px;color:var(--dim)}
-  .grid figcaption b{color:var(--ink);font-weight:600}
-  table{width:100%;border-collapse:collapse;font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
-  th{color:var(--dim);text-align:left;font-weight:500;letter-spacing:.08em;padding:7px 10px;
-    border-bottom:1px solid var(--line)}
-  td{padding:6px 10px;border-bottom:1px solid #1c1913;color:var(--ink)}
-  tr.ray td:first-child{color:#d98f6c}tr.sam td:first-child{color:#7cb8d9}
-  .flag{display:inline-block;padding:1px 7px;border-radius:99px;font-size:10.5px;letter-spacing:.06em;
-    border:1px solid var(--line);color:var(--dim);margin-left:6px}
-  .flag.bad{color:#e0705f;border-color:#4a2620}
-  .flag.win{color:var(--green);border-color:#1d4230}
-  .how{color:var(--dim);font-size:14.5px;max-width:760px}
-  .how b{color:var(--ink)}
-  .how p{margin-bottom:12px}
-  .foot{margin-top:44px;font-size:13px;color:var(--dim);max-width:640px;text-align:center}
-  a{color:var(--green);text-decoration:none}
+  html,body{height:100%}
+  body{margin:0;background:#000;display:flex;align-items:center;justify-content:center}
+  video{max-width:100%;max-height:100vh;display:block}
 </style>
 </head>
 <body>
-  <h1>Pool Table Test</h1>
-  <p class="sub">Two moderate-skill AI players. One complete game of 8-ball.
-    Every collision, cushion and roll simulated with real billiards physics
-    (<a href="https://github.com/ekiefl/pooltool">pooltool</a>), then rendered
-    as a film in Blender — in a dive bar that never existed.</p>
-  <div class="frame">
-    <video src="pool-game.mp4" controls playsinline poster="poster.jpg"
-           onerror="this.outerHTML='<video src=break-preview.mp4 autoplay muted loop playsinline poster=poster.jpg></video>'"></video>
-  </div>
-  <p class="meta"><span><b>34</b> SHOTS</span><span><b>151s</b> BALL ACTION</span>
-    <span><b>3</b> SCRATCHES</span><span>WINNER · <b>SAM</b> (SOLIDS)</span>
-    <span><b>60Hz</b> PHYSICS · <b>30</b>FPS FILM · <b>1kHz</b> BULLET-TIME BREAK</span></p>
-
-  <div class="wrap">
-    <h2>Frames from the take</h2>
-    <div class="grid">
-      <figure><img src="stills/break-impact.jpg" alt="Cue ball streaking into the rack">
-        <figcaption><b>The break, one frame before impact.</b> The cue ball is a motion-blur
-        streak; the film then drops to 2% speed.</figcaption></figure>
-      <figure><img src="stills/bullet-time.jpg" alt="Bullet-time orbit of the exploding rack">
-        <figcaption><b>Bullet time.</b> The break re-simulated at 1,000 Hz, camera orbiting
-        the exploding rack. Numbers and stripes roll with the balls.</figcaption></figure>
-      <figure><img src="stills/the-room.jpg" alt="Wide shot of the dive bar">
-        <figcaption><b>The room.</b> Brick, tin ceiling, neon, string bulbs, haze —
-        a seedy underground New York pool bar, out of focus by design.</figcaption></figure>
-      <figure><img src="stills/heartbreak.jpg" alt="8 ball hanging at the pocket">
-        <figcaption><b>Shot 34.</b> Ray pots the 8 — and the pocket cam holds as the
-        cue ball follows it in. Sam wins without shooting.</figcaption></figure>
-      <figure><img src="stills/the-tally.jpg" alt="Chalk scoreboard with the winner circled">
-        <figcaption><b>The tally.</b> A chalkboard X-es off every pocketed ball as it
-        drops, then circles the winner.</figcaption></figure>
-    </div>
-
-    <h2>The game, shot by shot</h2>
-    <table id="log"><thead><tr><th>#</th><th>PLAYER</th><th>SHOT</th><th>RESULT</th></tr></thead>
-      <tbody></tbody></table>
-
-    <h2>How it works</h2>
-    <div class="how">
-      <p><b>Physics first.</b> <a href="https://github.com/omgitsthedm/pool-table-test">simulate_game.py</a>
-      plays the game with pooltool's event-based solver — momentum-conserving impacts,
-      sliding→rolling friction, cushion physics, spin. The players are skill models:
-      aim wander that grows with distance, speed misjudgement, unintentional english.
-      Scratches give ball-in-hand; an 8 potted on the break re-spots (house rule).</p>
-      <p><b>Then the take is frozen.</b> The whole game — every ball's position and
-      roll orientation at 60 Hz — is exported to <code>game.json</code>. The film
-      always renders from this exact take, so the physics can't drift between renders.</p>
-      <p><b>Then the film.</b> <code>render_game.py</code> rebuilds the table in Blender
-      to the simulator's exact playfield geometry (the rendered cushions sit on the
-      physics lines), dresses the bar around it, and runs the camera program:
-      chalkboard intro, overhead break, the 1 kHz bullet-time orbit, pocket cams with
-      a live tally, per-shot handheld coverage, and the final heartbreak hold.
-      No sound — this is a visual test.</p>
-    </div>
-  </div>
-
-  <p class="foot">Full pipeline + docs on
-    <a href="https://github.com/omgitsthedm/pool-table-test">GitHub</a> ·
-    physics by <a href="https://github.com/ekiefl/pooltool">pooltool</a> ·
-    textures <a href="https://ambientcg.com">ambientCG</a> (CC0)</p>
-
-<script>
-const LOG = [
-  [1,"Ray","break","BREAK \u2014 full rack","POTS 13, 2"],
-  [2,"Ray","pot","on the 14","MISS"],
-  [3,"Sam","pot","on the 4","MISS"],
-  [4,"Ray","pot","on the 12","POTS 12 \u00b7 SCRATCH"],
-  [5,"Sam","pot","on the 4","BALL IN HAND \u00b7 MISS"],
-  [6,"Ray","pot","on the 10","MISS"],
-  [7,"Sam","pot","on the 4","MISS"],
-  [8,"Ray","pot","on the 15","MISS"],
-  [9,"Sam","pot","on the 4","MISS"],
-  [10,"Ray","pot","on the 10","MISS"],
-  [11,"Sam","pot","on the 1","MISS"],
-  [12,"Ray","pot","on the 10","MISS"],
-  [13,"Sam","pot","on the 3","MISS"],
-  [14,"Ray","pot","on the 10","MISS"],
-  [15,"Sam","pot","on the 4","MISS"],
-  [16,"Ray","pot","on the 10","POTS 10"],
-  [17,"Sam","pot","on the 4","MISS"],
-  [18,"Ray","pot","on the 11","MISS"],
-  [19,"Sam","pot","on the 4","MISS"],
-  [20,"Ray","pot","on the 11","POTS 1"],
-  [21,"Sam","pot","on the 4","POTS 14 \u00b7 SCRATCH"],
-  [22,"Ray","pot","on the 11","BALL IN HAND \u00b7 POTS 11"],
-  [23,"Sam","pot","on the 4","POTS 4"],
-  [24,"Ray","pot","on the 15","POTS 15"],
-  [25,"Sam","pot","on the 6","MISS"],
-  [26,"Ray","pot","on the 9","MISS"],
-  [27,"Sam","pot","on the 3","MISS"],
-  [28,"Ray","pot","on the 9","POTS 9"],
-  [29,"Sam","pot","on the 5","MISS"],
-  [30,"Ray","pot","on the 8","MISS"],
-  [31,"Sam","pot","on the 5","POTS 5"],
-  [32,"Ray","pot","on the 8","MISS"],
-  [33,"Sam","pot","on the 3","POTS 3"],
-  [34,"Ray","pot","on the 8","POTS 8 \u00b7 SCRATCH \u00b7 GAME: SAM WINS"],
-];
-const tb = document.querySelector("#log tbody");
-for (const [n,p,k,shot,res] of LOG) {
-  const tr = document.createElement("tr");
-  tr.className = p.toLowerCase();
-  let flags = "";
-  if (/SCRATCH/.test(res)) flags += '<span class="flag bad">SCRATCH</span>';
-  if (/POTS/.test(res)) flags += `<span class="flag win">${res.split(" · ").find(x=>x.startsWith("POTS"))}</span>`;
-  if (/MISS/.test(res)) flags += '<span class="flag">MISS</span>';
-  if (/BALL IN HAND/.test(res)) flags += '<span class="flag">BALL IN HAND</span>';
-  if (/GAME/.test(res)) flags += '<span class="flag win">SAM WINS</span>';
-  if (!flags && k === "pot") flags = '<span class="flag win">POT</span>';
-  if (k === "break") flags = '<span class="flag">BREAK</span>';
-  tr.innerHTML = `<td>${n}</td><td>${p.toUpperCase()}</td><td>${shot}</td><td>${flags}</td>`;
-  tb.appendChild(tr);
-}
-</script>
+  <video src="pool-game.mp4" controls autoplay muted loop playsinline poster="poster.jpg"></video>
 </body>
 </html>

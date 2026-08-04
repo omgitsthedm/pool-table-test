@@ -11,3 +11,9 @@ out/pool-game.*
 site/pool-game.mp4
 render_full.log
 *.blend1
+frames_break/
+out/pool-break.*
+out/brk_*.png
+out/human_*.png
+out/table_*.png
+out/*.blend

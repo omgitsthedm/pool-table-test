@@ -19,8 +19,11 @@ import numpy as np
 import pooltool as pt
 from pooltool.constants import pocketed as STATE_POCKETED
 
+import wpa_spec as S
+from export_table import build_table
+
 HERE = os.path.dirname(os.path.realpath(__file__))
-OUT = os.path.join(HERE, "break.json")
+OUT = os.path.join(HERE, "break9.json")
 RATE = 120.0                      # samples per second exported
 TRIES = int(os.environ.get("BREAK_TRIES", "36"))
 
@@ -52,9 +55,11 @@ def quat_from_omega(samples_w, dt):
 
 def roll_one(seed):
     rng = np.random.default_rng(seed)
-    table = pt.Table.default()
+    # the WPA 9-foot table, same object the renderer draws from
+    table = build_table()
+    params = pt.BallParams(R=S.BALL_R, m=S.BALL_MASS)
     balls = pt.get_rack(pt.GameType.EIGHTBALL, table=table,
-                        ball_params=pt.BallParams.default(), spacing_factor=1e-4)
+                        ball_params=params, spacing_factor=1e-4)
     cue_ball = balls["cue"]
     # break from behind the head string, a touch off centre like a real player
     cue_ball.state.rvw[0][0] = table.w * (0.5 + float(rng.normal(0, 0.045)))
@@ -65,7 +70,7 @@ def roll_one(seed):
     cue = pt.Cue(cue_ball_id="cue")
     system = pt.System(table=table, balls=balls, cue=cue)
     # a hard, flat break: near the ball's centre, a hair below to keep it down
-    V0 = float(rng.uniform(7.6, 8.5))
+    V0 = float(rng.uniform(8.0, 8.9))
     phi = 90.0 + float(rng.normal(0, 0.35))
     system.cue.set_state(V0=V0, phi=phi, a=float(rng.normal(0, 0.012)),
                          b=float(rng.uniform(-0.09, -0.03)), theta=0.0)

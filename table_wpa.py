@@ -197,9 +197,20 @@ def _segment_paths(table):
         d.normalize()
         nrm = Vector((-d.y, d.x, 0.0))
         mid = (p1 + p2) * 0.5
-        if (Vector((cx, cy, 0)) - mid).dot(nrm) < 0:
-            nrm = -nrm                      # always point into the playfield
-        runs.append(("lin_%s" % key, [p1, p2], [nrm, nrm]))
+        seg_len = (p2 - p1).length
+        if seg_len < 0.20:
+            # A jaw face. Its playing side is the pocket throat, not the
+            # middle of the table, so orienting it towards the table centre
+            # swings the cushion body around and buries it in the mouth.
+            pc = min(table.pockets.values(),
+                     key=lambda pk: (mid - Vector((pk.center[0], pk.center[1],
+                                                   0.0))).length)
+            to_pocket = Vector((pc.center[0], pc.center[1], 0.0)) - mid
+            if to_pocket.length > 1e-9 and to_pocket.dot(nrm) < 0:
+                nrm = -nrm                  # face the throat; body goes behind
+        elif (Vector((cx, cy, 0)) - mid).dot(nrm) < 0:
+            nrm = -nrm                      # main rail: face the playfield
+        runs.append(("lin_%s" % key, [p1, p2], [nrm, nrm], None))
 
     for key, seg in table.cushion_segments.circular.items():
         c = Vector((seg.center[0], seg.center[1], 0.0))
@@ -213,19 +224,30 @@ def _segment_paths(table):
                     touch.append(atan2(v.y, v.x))
         if len(touch) < 2:
             continue
-        a0, a1 = touch[0], touch[1]
+        touch = sorted(set(round(t, 6) for t in touch))
+        if len(touch) > 2:
+            pairs = [(abs(touch[i + 1] - touch[i]), touch[i], touch[i + 1])
+                     for i in range(len(touch) - 1)]
+            _, a0, a1 = min(pairs)
+        else:
+            a0, a1 = touch[0], touch[1]
         while a1 - a0 > math.pi:
             a1 -= 2 * math.pi
         while a0 - a1 > math.pi:
             a1 += 2 * math.pi
-        steps = 7
+        steps = 8
         path, normals = [], []
         for i in range(steps + 1):
             a = a0 + (a1 - a0) * i / steps
             p = c + Vector((cos(a) * r, sin(a) * r, 0.0))
             path.append(p)
             normals.append(Vector((cos(a), sin(a), 0.0)))   # outward from arc
-        runs.append(("arc_%s" % key, path, normals))
+        # These fillets are small (a 21 mm jaw radius against a 51 mm cushion
+        # body). Sweeping the full profile inwards overshoots the arc centre
+        # and folds the geometry back out across the pocket throat, so the
+        # body is clamped to stay inside its own radius.
+        runs.append(("arc_%s" % key, path, normals, min(r * 0.75, None)
+                     if False else r * 0.75))
     return runs
 
 
@@ -270,10 +292,10 @@ def build(mats, table):
 
     # ------------------------------------------------------------ cushions --
     cushions = []
-    for name, path, normals in _segment_paths(table):
+    for name, path, normals, width in _segment_paths(table):
         wpath = [bl(p.x, p.y) for p in path]
         ob = _extrude_profile("cushion_" + name, wpath, normals, NOSE,
-                              S.CUSHION_W, mats["cushion"])
+                              width or S.CUSHION_W, mats["cushion"])
         for p in ob.data.polygons:
             p.use_smooth = name.startswith("arc")
         cushions.append(ob)
@@ -332,7 +354,9 @@ def build(mats, table):
             if d.length < 1e-6:
                 continue
             d.normalize()
-            ring.append(v + d * 0.005)
+            # pull the cut *inside* the jaw line: widening past it undercuts
+            # the slate the jaw cushions sit on and leaves them floating
+            ring.append(v - d * 0.004)
         # Build the cutter with bmesh: an n-gon lofted downward and outward
         # by the WPA back draft. Hand-built face lists get culled by
         # mesh.validate() when the winding disagrees, which silently produced

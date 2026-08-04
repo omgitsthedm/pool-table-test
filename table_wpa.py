@@ -244,8 +244,15 @@ def _pocket_outline(table, key, pocket):
                 pts.append(v)
     if len(pts) < 3:
         return None
-    ang = sorted(pts, key=lambda v: atan2(v.y - c.y, v.x - c.x))
-    return ang
+    # Sort around the centroid of the points, not the pocket centre: the
+    # pocket centre sits behind the jaws, outside this polygon, and sorting
+    # about an exterior point yields a self-crossing outline that booleans
+    # away to nothing.
+    mid = Vector((0.0, 0.0, 0.0))
+    for v in pts:
+        mid += v
+    mid /= len(pts)
+    return sorted(pts, key=lambda v: atan2(v.y - mid.y, v.x - mid.x)), mid
 
 
 def build(mats, table):
@@ -313,32 +320,48 @@ def build(mats, table):
     draft = math.tan(radians(S.BACK_DRAFT_DEG))
     holes = {}
     for key, pocket in table.pockets.items():
-        outline = _pocket_outline(table, key, pocket)
-        if outline is None:
+        res = _pocket_outline(table, key, pocket)
+        if res is None:
             continue
-        c = Vector((pocket.center[0], pocket.center[1], 0.0))
+        outline, mid = res
+        c = mid
         # widen the outline slightly outward so the cut clears the jaw faces
         ring = []
         for v in outline:
             d = (v - c)
+            if d.length < 1e-6:
+                continue
             d.normalize()
-            ring.append(v + d * 0.004)
-        top = [bl(p.x, p.y, 0.055) for p in ring]
+            ring.append(v + d * 0.005)
+        # Build the cutter with bmesh: an n-gon lofted downward and outward
+        # by the WPA back draft. Hand-built face lists get culled by
+        # mesh.validate() when the winding disagrees, which silently produced
+        # a cutter that removed nothing.
         depth = 0.34
-        bot = []
+        bm = bmesh.new()
+        top_v = [bm.verts.new(tuple(bl(p.x, p.y, 0.055))) for p in ring]
+        bm.faces.new(top_v)
+        bm.verts.ensure_lookup_table()
+        bot_v = []
         for p in ring:
             d = (p - c)
             d.normalize()
             q = p + d * (draft * depth)
-            bot.append(bl(q.x, q.y, 0.055 - depth))
+            bot_v.append(bm.verts.new(tuple(bl(q.x, q.y, 0.055 - depth))))
         n = len(ring)
-        verts = top + bot
-        faces = [[i, (i + 1) % n, n + (i + 1) % n, n + i] for i in range(n)]
-        faces.append(list(range(n - 1, -1, -1)))
-        faces.append(list(range(n, 2 * n)))
-        cutter = _obj("cut_%s" % key, verts, faces, None)
-        cutter.data.validate()
+        for k in range(n):
+            k2 = (k + 1) % n
+            bm.faces.new((top_v[k2], top_v[k], bot_v[k], bot_v[k2]))
+        bm.faces.new(list(reversed(bot_v)))
+        bm.normal_update()
+        me = bpy.data.meshes.new("cut_%s" % key)
+        bm.to_mesh(me)
+        bm.free()
+        cutter = bpy.data.objects.new("cut_%s" % key, me)
+        bpy.context.collection.objects.link(cutter)
         for target in [cloth, slate, frame] + rails:
+            # a pocket legitimately misses the rails on the far side of the
+            # table, so only an outright modifier failure is worth reporting
             if not _boolean(target, cutter):
                 print("  POCKET CUT FAILED: %s on %s" % (key, target.name))
         holes[key] = (bl(c.x, c.y, 0.0), pocket.radius)

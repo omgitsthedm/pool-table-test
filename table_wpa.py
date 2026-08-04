@@ -152,6 +152,37 @@ def _profile(nose_z, width):
     ]
 
 
+def _extrude_any(name, path, normals, prof, mat):
+    """Sweep an arbitrary (back-distance, height) cross-section along a path."""
+    verts, faces = [], []
+    n = len(prof)
+    for p, nrm in zip(path, normals):
+        back = Vector((-nrm.x, -nrm.y, 0.0))
+        for (dx, dz) in prof:
+            verts.append(Vector((p.x + back.x * dx, p.y + back.y * dx,
+                                 p.z + dz)))
+    for i in range(len(path) - 1):
+        a, b = i * n, (i + 1) * n
+        for k in range(n):
+            k2 = (k + 1) % n
+            faces.append([a + k, a + k2, b + k2, b + k])
+    faces.append(list(range(n - 1, -1, -1)))
+    faces.append(list(range(len(verts) - n, len(verts))))
+    return _obj(name, verts, faces, mat)
+
+
+# The wooden sub-rail the cushion is glued to (WPA sec.9 calls it the "rail
+# liner"): it sits on the slate behind the cushion and its face is what the
+# 142/104 degree pocket cuts are made through, so it is visible in every jaw.
+def _subrail_profile(nose_z, cushion_w, rail_w):
+    return [
+        (cushion_w, 0.0),
+        (cushion_w, nose_z + 0.0135),
+        (rail_w, nose_z + 0.0135),
+        (rail_w, 0.0),
+    ]
+
+
 def _extrude_profile(name, path, normals, nose_z, width, mat):
     """
     Sweep the cushion profile along `path`. `normals[i]` is the inward-facing
@@ -291,15 +322,33 @@ def build(mats, table):
         return Vector((x - W / 2.0, y - L / 2.0, BED + z))
 
     # ------------------------------------------------------------ cushions --
-    cushions = []
+    # WPA sec.13 covers the cushions in the same cloth as the bed, stretched
+    # over the rubber and tucked behind a featherstrip. Rendering them as bare
+    # rubber in a different green is the single most obvious tell that a table
+    # is modelled rather than photographed.
+    cushions, subrails = [], []
     for name, path, normals, width in _segment_paths(table):
         wpath = [bl(p.x, p.y) for p in path]
         ob = _extrude_profile("cushion_" + name, wpath, normals, NOSE,
-                              width or S.CUSHION_W, mats["cushion"])
+                              width or S.CUSHION_W, mats["cloth"])
         for p in ob.data.polygons:
             p.use_smooth = name.startswith("arc")
         cushions.append(ob)
+        if width is None:                       # straight runs only
+            sr = _extrude_any("subrail_" + name, wpath, normals,
+                              _subrail_profile(NOSE, S.CUSHION_W, S.RAIL_W),
+                              mats["wood"])
+            subrails.append(sr)
+        # the featherstrip: a thin dark reveal where the cloth is tucked in
+        fs = _extrude_any("feather_" + name, wpath, normals,
+                          [(S.CUSHION_W - 0.004, NOSE + 0.0100),
+                           (S.CUSHION_W - 0.004, NOSE + 0.0140),
+                           (S.CUSHION_W + 0.001, NOSE + 0.0140),
+                           (S.CUSHION_W + 0.001, NOSE + 0.0100)],
+                          mats["facing"])
+        cushions.append(fs)
     parts["cushions"] = cushions
+    parts["subrails"] = subrails
 
     # ------------------------------------------------------------ the bed ---
     outer_w = W + 2 * S.RAIL_W
@@ -314,18 +363,27 @@ def build(mats, table):
                  mats["wood"])
 
     # ------------------------------------------------------------- rails ----
-    rail_top = NOSE + 0.0135 + 0.030
-    cap_w = S.RAIL_W - S.CUSHION_W
+    # Rail cap: a wooden board bolted on top of the sub-rail. Its inner edge
+    # overhangs the cushion by a few millimetres (the lip a ball rattles
+    # against on a bad pot) and its outer edge projects slightly past the
+    # cabinet, so the cap reads as a separate plank and not as one solid mass.
+    cap_bot = NOSE + 0.0135
+    cap_h = 0.032
+    rail_top = cap_bot + cap_h
+    LIP = 0.009                       # overhang towards the playfield
+    OVER = 0.007                      # overhang past the cabinet
+    cap_w = (S.RAIL_W + OVER) - (S.CUSHION_W - LIP)
+    inner = S.CUSHION_W - LIP
     rails = []
     for sgn in (-1.0, 1.0):
         rails.append(_box(
-            "rail_x%+d" % sgn, (cap_w, outer_l, rail_top),
-            bl(W / 2 + sgn * (W / 2 + S.CUSHION_W + cap_w / 2), L / 2,
-               rail_top / 2), mats["rail"], bevel=0.0018))
+            "rail_x%+d" % sgn, (cap_w, outer_l + 2 * OVER, cap_h),
+            bl(W / 2 + sgn * (W / 2 + inner + cap_w / 2), L / 2,
+               cap_bot + cap_h / 2), mats["rail"], bevel=0.0022))
         rails.append(_box(
-            "rail_y%+d" % sgn, (W + 2 * S.CUSHION_W, cap_w, rail_top),
-            bl(W / 2, L / 2 + sgn * (L / 2 + S.CUSHION_W + cap_w / 2),
-               rail_top / 2), mats["rail"], bevel=0.0018))
+            "rail_y%+d" % sgn, (W + 2 * inner, cap_w, cap_h),
+            bl(W / 2, L / 2 + sgn * (L / 2 + inner + cap_w / 2),
+               cap_bot + cap_h / 2), mats["rail"], bevel=0.0022))
 
     for r in rails:                    # flatten the bevel before booleans
         bpy.context.view_layer.objects.active = r
@@ -383,7 +441,7 @@ def build(mats, table):
         bm.free()
         cutter = bpy.data.objects.new("cut_%s" % key, me)
         bpy.context.collection.objects.link(cutter)
-        for target in [cloth, slate, frame] + rails:
+        for target in [cloth, slate, frame] + rails + subrails:
             # a pocket legitimately misses the rails on the far side of the
             # table, so only an outright modifier failure is worth reporting
             if not _boolean(target, cutter):

@@ -17,3 +17,9 @@ out/brk_*.png
 out/human_*.png
 out/table_*.png
 out/*.blend
+
+# phase 2 lives in its own repo; assets folder is local reference material
+nyc-dive-bar-pool-room/
+Pool Table Assets/
+tmp/
+.DS_Store

@@ -23,3 +23,10 @@ nyc-dive-bar-pool-room/
 Pool Table Assets/
 tmp/
 .DS_Store
+
+# Local-only working copies. The canonical media is committed in
+# nyc-dive-bar-pool-room/site/ and deployed from the website repo.
+FINAL-break-film.*
+FINAL-poster.webp
+Pool Room Review/
+*.rtf
